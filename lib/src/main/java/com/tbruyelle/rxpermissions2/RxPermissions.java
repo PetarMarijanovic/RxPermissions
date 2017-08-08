@@ -16,7 +16,6 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
@@ -80,32 +79,13 @@ public class RxPermissions {
   }
 
   private Observable<Permission> request(final Observable<?> trigger, final String permission) {
-    return oneOf(trigger, pending(permission))
-        .flatMap(
-            new Function<Object, Observable<Permission>>() {
-              @Override
-              public Observable<Permission> apply(Object o) throws Exception {
-                return requestImplementation(permission);
-              }
-            });
-  }
-
-  private Observable<?> pending(final String permission) {
-    if (!mRxPermissionsFragment.containsByPermission(permission)) {
-      Log.d(TAG, "pending doesnt contain permission!");
-      return Observable.empty();
-    }
-      Log.d(TAG, "pending containsPermission!");
-    return Observable.just(TRIGGER);
-  }
-
-  private Observable<?> oneOf(Observable<?> trigger, Observable<?> pending) {
-    if (trigger == null) {
-      Log.d(TAG, "oneOf Trigger is null!");
-      return Observable.just(TRIGGER);
-    }
-      Log.d(TAG, "oneOf Trigger is not null!");
-    return Observable.merge(trigger, pending);
+    return trigger.flatMap(
+        new Function<Object, Observable<Permission>>() {
+          @Override
+          public Observable<Permission> apply(Object o) throws Exception {
+            return requestImplementation(permission);
+          }
+        });
   }
 
   @TargetApi(Build.VERSION_CODES.M)
