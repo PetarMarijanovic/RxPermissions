@@ -9,9 +9,9 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 
+import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 
-import io.reactivex.Observable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 
@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     rxPermissions = new RxPermissions(this);
-    rxPermissions.setLogging(true);
 
     setContentView(R.layout.act_main);
     surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
@@ -37,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
             new OnClickListener() {
               @Override
               public void onClick(View v) {
-                requestPermission();
+                requestPermission(permission.CAMERA);
               }
             });
   }
@@ -48,15 +47,14 @@ public class MainActivity extends AppCompatActivity {
     releaseCamera();
   }
 
-  private void requestPermission() {
-    Observable.just(true)
-        // Ask for permissions when button is clicked
-        .compose(rxPermissions.ensure(permission.CAMERA))
+  private void requestPermission(final String permission) {
+    rxPermissions
+        .requestPermission(permission)
         .subscribe(
-            new Consumer<Boolean>() {
+            new Consumer<Permission>() {
               @Override
-              public void accept(Boolean permission) {
-                Log.i(TAG, "Permission result " + permission);
+              public void accept(Permission permission) {
+                Log.i(TAG, "Permission result " + permission.granted);
               }
             },
             new Consumer<Throwable>() {
